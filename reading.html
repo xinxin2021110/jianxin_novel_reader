@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简心 - 阅读</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: #faf8f3;
+            color: #333;
+            line-height: 1.8;
+            transition: all 0.3s ease;
+        }
+
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        /* 顶部工具栏 */
+        .toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(250, 248, 243, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark-mode .toolbar {
+            background: rgba(26, 26, 26, 0.95);
+            border-bottom-color: rgba(139, 115, 85, 0.2);
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #8b7355;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(139, 115, 85, 0.1);
+        }
+
+        .chapter-title {
+            font-size: 1.1rem;
+            color: #6b5b73;
+            font-weight: 500;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .toolbar-btn {
+            background: none;
+            border: none;
+            color: #8b7355;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .toolbar-btn:hover {
+            background: rgba(139, 115, 85, 0.1);
+            transform: scale(1.1);
+        }
+
+        /* 侧边栏 */
+        .sidebar {
+            position: fixed;
+            left: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: rgba(250, 248, 243, 0.98);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(139, 115, 85, 0.1);
+            transition: left 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+            padding: 5rem 0 2rem;
+        }
+
+        body.dark-mode .sidebar {
+            background: rgba(26, 26, 26, 0.98);
+            border-right-color: rgba(139, 115, 85, 0.2);
+        }
+
+        .sidebar.open {
+            left: 0;
+        }
+
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .sidebar-header {
+            padding: 0 2rem 1rem;
+            border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            color: #8b7355;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            color: #6b5b73;
+        }
+
+        .chapter-list {
+            list-style: none;
+        }
+
+        .chapter-item {
+            padding: 0.8rem 2rem;
+            border-bottom: 1px solid rgba(139, 115, 85, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .chapter-item:hover {
+            background: rgba(139, 115, 85, 0.05);
+            padding-left: 2.5rem;
+        }
+
+        .chapter-item.active {
+            background: rgba(139, 115, 85, 0.1);
+            border-left: 3px solid #8b7355;
+            padding-left: 2.5rem;
+        }
+
+        .chapter-item-title {
+            font-size: 1rem;
+            color: #6b5b73;
+            margin-bottom: 0.2rem;
+        }
+
+        .chapter-item-subtitle {
+            font-size: 0.85rem;
+            color: #8b7355;
+            opacity: 0.8;
+        }
+
+        /* 主要内容区域 */
+        .main-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 6rem 2rem 4rem;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.sidebar-open {
+            margin-left: 300px;
+        }
+
+        .chapter {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .chapter.active {
+            display: block;
+        }
+
+        .chapter h2 {
+            font-size: 2rem;
+            color: #8b7355;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 400;
+            letter-spacing: 0.2rem;
+        }
+
+        .chapter h3 {
+            font-size: 1.5rem;
+            color: #6b5b73;
+            margin: 2rem 0 1rem;
+            font-weight: 500;
+        }
+
+        .chapter p {
+            margin-bottom: 1.5rem;
+            text-indent: 2em;
+            font-size: 1.1rem;
+            line-height: 1.8;
+        }
+
+        .chapter .section-title {
+            font-size: 1.3rem;
+            color: #8b7355;
+            text-align: center;
+            margin: 3rem 0 2rem;
+            font-weight: 500;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(250, 248, 243, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(139, 115, 85, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 999;
+        }
+
+        body.dark-mode .bottom-nav {
+            background: rgba(26, 26, 26, 0.95);
+            border-color: rgba(139, 115, 85, 0.2);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #8b7355;
+            font-size: 1.1rem;
+            cursor: pointer;
+            padding: 0.8rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: rgba(139, 115, 85, 0.1);
+            transform: scale(1.1);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .progress-bar {
+            width: 200px;
+            height: 4px;
+            background: rgba(139, 115, 85, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            margin: 0 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b7355, #a68b5b);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .chapter-info {
+            font-size: 0.9rem;
+            color: #6b5b73;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* 设置面板 */
+        .settings-panel {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: rgba(250, 248, 243, 0.98);
+            backdrop-filter: blur(15px);
+            border-left: 1px solid rgba(139, 115, 85, 0.1);
+            transition: right 0.3s ease;
+            z-index: 999;
+            overflow-y: auto;
+            padding: 5rem 2rem 2rem;
+        }
+
+        body.dark-mode .settings-panel {
+            background: rgba(26, 26, 26, 0.98);
+            border-left-color: rgba(139, 115, 85, 0.2);
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-title {
+            font-size: 1.2rem;
+            color: #8b7355;
+            font-weight: 600;
+            margin-bottom: 2rem;
+        }
+
+        .setting-group {
+            margin-bottom: 2rem;
+        }
+
+        .setting-label {
+            display: block;
+            color: #6b5b73;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .setting-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(139, 115, 85, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .setting-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #8b7355;
+            cursor: pointer;
+        }
+
+        .setting-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #8b7355;
+            cursor: pointer;
+            border: none;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 5rem 1rem 4rem;
+            }
+            
+            .main-content.sidebar-open {
+                margin-left: 0;
+            }
+            
+            .sidebar {
+                width: 280px;
+            }
+            
+            .bottom-nav {
+                bottom: 1rem;
+                padding: 0.3rem 0.8rem;
+                gap: 0.5rem;
+            }
+            
+            .progress-bar {
+                width: 120px;
+            }
+            
+            .chapter p {
+                font-size: 1rem;
+            }
+        }
+
+        /* 深色模式样式 */
+        body.dark-mode .chapter h2,
+        body.dark-mode .chapter h3 {
+            color: #c9a876;
+        }
+
+        body.dark-mode .chapter p {
+            color: #e0e0e0;
+        }
+
+        body.dark-mode .chapter-title,
+        body.dark-mode .chapter-item-title {
+            color: #c9a876;
+        }
+
+        body.dark-mode .chapter-item-subtitle {
+            color: #a68b5b;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部工具栏 -->
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <button class="back-btn" onclick="window.location.href='index.html'">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <div class="chapter-title">第一章 初入校园</div>
+        </div>
+        <div class="toolbar-right">
+            <button class="toolbar-btn" onclick="toggleSidebar()">
+                <i class="fas fa-list"></i>
+            </button>
+            <button class="toolbar-btn" onclick="toggleSettings()">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 侧边栏 -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3 class="sidebar-title">目录</h3>
+            <p class="sidebar-subtitle">共20章</p>
+        </div>
+        <ul class="chapter-list">
+            <li class="chapter-item active" onclick="goToChapter(1)">
+                <div class="chapter-item-title">第一章</div>
+                <div class="chapter-item-subtitle">初入校园</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(2)">
+                <div class="chapter-item-title">第二章</div>
+                <div class="chapter-item-subtitle">湖边偶遇</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(3)">
+                <div class="chapter-item-title">第三章</div>
+                <div class="chapter-item-subtitle">开学典礼</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(4)">
+                <div class="chapter-item-title">第四章</div>
+                <div class="chapter-item-subtitle">图书馆邂逅</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(5)">
+                <div class="chapter-item-title">第五章</div>
+                <div class="chapter-item-subtitle">加入课题组</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(6)">
+                <div class="chapter-item-title">第六章</div>
+                <div class="chapter-item-subtitle">迎新晚会</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(7)">
+                <div class="chapter-item-title">第七章</div>
+                <div class="chapter-item-subtitle">日常相处</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(8)">
+                <div class="chapter-item-title">第八章</div>
+                <div class="chapter-item-subtitle">学术突破</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(9)">
+                <div class="chapter-item-title">第九章</div>
+                <div class="chapter-item-subtitle">上海之行</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(10)">
+                <div class="chapter-item-title">第十章</div>
+                <div class="chapter-item-subtitle">情感萌芽</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(11)">
+                <div class="chapter-item-title">第十一章</div>
+                <div class="chapter-item-subtitle">深夜长谈</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(12)">
+                <div class="chapter-item-title">第十二章</div>
+                <div class="chapter-item-subtitle">外滩漫步</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(13)">
+                <div class="chapter-item-title">第十三章</div>
+                <div class="chapter-item-subtitle">心灵相通</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(14)">
+                <div class="chapter-item-title">第十四章</div>
+                <div class="chapter-item-subtitle">回归日常</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(15)">
+                <div class="chapter-item-title">第十五章</div>
+                <div class="chapter-item-subtitle">情感困惑</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(16)">
+                <div class="chapter-item-title">第十六章</div>
+                <div class="chapter-item-subtitle">深夜笛声</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(17)">
+                <div class="chapter-item-title">第十七章</div>
+                <div class="chapter-item-subtitle">心意相通</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(18)">
+                <div class="chapter-item-title">第十八章</div>
+                <div class="chapter-item-subtitle">雪中漫步</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(19)">
+                <div class="chapter-item-title">第十九章</div>
+                <div class="chapter-item-subtitle">元旦之夜</div>
+            </li>
+            <li class="chapter-item" onclick="goToChapter(20)">
+                <div class="chapter-item-title">第二十章</div>
+                <div class="chapter-item-subtitle">风雨同舟</div>
+            </li>
+        </ul>
+    </div>
+
+    <!-- 侧边栏遮罩 -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <!-- 主要内容 -->
+    <div class="main-content" id="mainContent">
+        <!-- 第一章 -->
+        <div class="chapter active" id="chapter1">
+            <h2>第一章 初入校园</h2>
+            
+            <div class="section-title">第一节</div>
+            
+            <p>八月底的北京，像一口烧干了水的铁锅，只剩下灼人的余温。粘稠的空气混着汽车尾气，从地铁口涌出来，兜头盖脸地糊在简心身上。他后背的T恤已经黏在了皮肤上，额前的碎发也被汗水打湿，一绺一绺地贴着额头。</p>
+            
+            <p>他拖着行李箱，背着那个看起来用了有些年头的双肩包，在人行道上艰难地穿行。手机导航的机械女声在耳边聒噪地响着："前方两百米，到达国科大玉泉路校区校车乘坐点。"</p>
+            
+            <p>乘坐点已经排起了长龙，像一条在烈日下暴晒的贪吃蛇。队伍里全是和他年纪相仿的年轻人，脸上洋溢着一种几乎要满溢出来的、名为"未来"的光彩。他们三三两两地聚在一起，兴奋地交谈着。</p>
+            
+            <p>"我跟的导师是乔院士，听说巨push，以后有的熬了。"一个戴眼镜的男生故作愁容地说，嘴角却忍不住上扬。</p>
+            
+            <p>"知足吧你，我导师直接放养，暑假实习都没顾上问我一句。"另一个高个子男生抱怨着，从口袋里掏出最新的折叠屏手机，开始展示他实习公司做的项目，"看，我们组这个月的成果，一个全新的多模态大模型seed 1.6，效果炸裂。"</p>
+            
+            <p>简心默默地排在队伍的最后面，帽檐压得很低，把自己藏进一片小小的阴影里。他下意识地攥紧了行李箱的拉杆，手心的汗让塑料的触感变得滑腻。这个箱子是他大一入学时，在一个学长毕业甩卖的摊子上买的，三十块钱。其中一个轮子在某次赶火车时摔坏了，从此，它走过的每一段路，都伴随着"咯噔、咯噔"的、不协调的抗议声。</p>
+            
+            <p>高个子男生手机里展示的那个项目界面，简心很熟悉。他暑假实习的公司，正是那家公司的主要竞争对手。他也参与了一个类似的多模态项目，负责的是核心算法的优化。在实习结束的最后一周，他提出的一个基于GRPO的改进方案，将模型的推理效率提升了将近百分之十五。</p>
+            
+            <p>带他的leader是个三十多岁的技术大牛，拍着他的肩膀，极力挽留他毕业后留下来，并且许诺给他SP级的薪酬和股票期权。简心只是摇了摇头，轻声说："谢谢，我还是想先好好读书。"</p>
+            
+            <p>他没说的是，那家公司的氛围太"狼性"了，每天无休止的会议、团建和绩效考核，让他感到窒息。他更喜欢一个人安安静静地待着，对着代码，或者对着书本。那个由逻辑和数据构成的世界，清晰、有序、公平，不像人心那么复杂难测。</p>
+            
+            <p>实习拿到的不菲薪水，让他第一次不用再为学费和生活费发愁。他甚至有余钱给自己换了台顶配的笔记本电脑，那是他整个行李箱里最值钱的东西，也是他最宝贵的"武器"。他用那台电脑跑过很多复杂的模型，写过很多项目，但他从未用它和谁视频聊天过。</p>
+            
+            <p>"同学，麻烦让一下。"</p>
+            
+            <p>一个声音打断了他的思绪。他回过神，才发现队伍已经往前挪了一大截，自己还愣在原地。他连忙说了声"抱歉"，拖着发出抗议声的箱子跟了上去。</p>
+            
+            <p>终于轮到他。检票的老师是个和蔼的中年阿姨，她接过简心的录取通知书，看到名字时顿了一下，然后抬头，仔细地打量了他一番。那眼神里有关切，有赞许，还有一丝藏不住的同情。</p>
+            
+            <p>"简心同学是吧？欢迎来到国科大。"她把通知书递回来，又额外叮嘱了一句，"暑假实习辛苦了，到学校了就好好休息一下。以后有任何困难，系里、院里都会帮助你的。"</p>
+            
+            <p>简心知道，他的档案干净得像一张被反复擦拭过的玻璃，除了满绩点的成绩和各种竞赛项目奖项，什么都没有。没有父母，没有家庭，只有一个来自遥远南方的、福利院的公章。他习惯了这样的"特殊关照"，也学会了如何用沉默和礼貌来应对。</p>
+            
+            <p>"谢谢老师。"他微微躬身，接过通知书，然后吃力地把行李箱搬上校车底部的行李舱。</p>
+            
+            <p>他选了最后一排靠窗的位置，戴上耳机，把音乐音量调到最大，试图用嘈杂的摇滚乐把外界的一切都隔绝开。</p>
+            
+            <p>校车缓缓驶离市区，窗外的景色从钢筋水泥的森林，逐渐过渡为开阔的田野和连绵的远山。夕阳像一个巨大的咸蛋黄，悬在天际线上，把云层染成一片壮丽的橘红色。</p>
+            
+            <p>他关掉音乐，靠着冰凉的车窗，看着这幅壮阔的景象，心里却空落落的。</p>
+            
+            <p>他想起小时候，在福利院，每当有家庭来领养孩子，院长都会把他们打扮得干干净净，排成一排。别的小朋友都会努力地笑，努力地表现自己。只有他，总是默默地躲在最后面。他害怕那种充满挑剔和审视的目光，更害怕那目光掠过他之后，最终停在别人身上时，心里那种被全世界抛弃的空洞感。</p>
+            
+            <p>久而久之，他便不再期待。</p>
+            
+            <p>考上大学，保送研究生，拿到顶尖公司的offer……他的人生看起来在一步步变好，就像这辆不断向前的校车。但他心里清楚，他只是从一个小小的、被遗弃的角落，走到了一个更大的、更华丽的、但依然孤身一人的舞台。</p>
+        </div>
+
+        <!-- 第二章 -->
+        <div class="chapter" id="chapter2">
+            <h2>第二章 湖边偶遇</h2>
+            
+            <div class="section-title">第二节</div>
+            
+            <p>宿舍里空荡荡的，只有他一个人。</p>
+            
+            <p>简心坐在椅子上，听着窗外偶尔传来的、属于别人的笑闹声，胃里那块能量棒带来的甜腻感，让他觉得心里更空了。他不想待在这里。这个全新的、一尘不染的房间，像一个精致的盒子，把他一个人严丝合缝地关了起来。</p>
+            
+            <p>他站起身，从枕头底下摸出那支用手帕包着的竹笛，揣进兜里，带上门走了出去。</p>
+            
+            <p>夜晚的校园，风比白天凉快得多，带着一股潮乎乎的水汽味儿。他也不知道要去哪儿，就顺着石子路，漫无目的地朝湖边走。路灯的光晕很小，照在地上，像一小滩一小滩积水。他的影子被拉长，又被缩短，像个沉默的玩伴。</p>
+            
+            <p>走了大概十几分钟，绕过几栋教学楼，眼前一下子开阔了。</p>
+            
+            <p>雁栖湖比他想象中大得多，黑漆漆的湖面像一块巨大的、平整的玻璃，映着天上那一点点模糊的星光和月亮。对面的山像一排蹲着的巨人，一动不动。四周安静极了，只有草丛里有不知名的虫子在叫。</p>
+            
+            <p>他在湖边找了条长椅坐下。石头发凉，透过裤子传到皮肤上，让他混沌的脑子清醒了一点。</p>
+            
+            <p>他从口袋里拿出那支竹笛。笛子是紫竹的，颜色很深，被他摩挲得有些发亮。他把笛子横在唇边，凉凉的，有一股竹子特有的清香。他深吸了一口带着水汽的空气，试着吹了一个长音。声音有些发颤，在空旷的夜里传不远，很快就散了。</p>
+            
+            <p>他不知道该吹点什么。脑子里乱糟糟的，像一团被猫抓过的毛线。他想起了很多事。想起小时候在艰难的求学之路；想起一个人坐十几个小时的绿皮火车来北京上大学；想起暑假在公司实习，格子间里那些疲惫又亢奋的脸……</p>
+            
+            <p>一首曲子的旋律，就这么自己从脑子里冒了出来。</p>
+            
+            <p>他没多想，手指自然而然地在笛孔上找到了位置，气息送了进去。</p>
+            
+            <p>是《传奇》。</p>
+            
+            <p>他也不知道自己为什么会吹这首曲子。或许只是因为旋律简单，又或许，是那歌词里唱的某些东西，在某个瞬间，恰好碰到了他心里的某个角落。</p>
+            
+            <p>"只是因为在人群中多看了你一眼"，</p>
+            
+            <p>"梦想着偶然能有一天再相见"</p>
+            
+            <p>"……"</p>
+            
+            <p>这些唱给恋人的句子，在他这里，莫名其妙地就变成了另一种说不出口的、傻气的幻想。</p>
+            
+            <p>他吹得很投入，闭着眼睛，把所有乱七八糟的情绪，都灌进了这支小小的竹管里。笛声算不上多精湛，甚至有几个地方因为气息不稳还带了点儿杂音，但里面有股说不出来的味道。有点儿孤单，有点儿迷茫，还有一点点连他自己都没察觉的、固执的期盼。</p>
+            
+            <p>一曲吹完，他慢慢放下笛子，长长地吐出一口气。胸口那股憋闷的感觉，好像真的顺着笛声，被吹出去了一些。</p>
+            
+            <p>"啪、啪、啪。"</p>
+            
+            <p>身后传来了几下很轻的、像是怕惊动了谁的掌声。</p>
+            
+            <p>简心的后背瞬间就僵了。他像只被踩了尾巴的猫，整个人都炸了起来，手忙脚乱地把笛子往身后塞，心脏"咚咚咚"地开始狂跳。</p>
+            
+            <p>他猛地转过头。</p>
+            
+            <p>路灯的阴影下，站着一个男人。看上去年纪不小了，穿着一身舒服的深灰色运动服，脚上一双老北京布鞋。身材有点发福，肚子微微挺着，但整个人看起来很精神，也很和善。脸上架着一副金丝边眼镜，镜片在灯光下反着光。</p>
+            
+            <p>男人见他这副受惊的样子，也愣了一下，随即脸上露出一个有点不好意思的笑容，他往前走了几步，在离简心大概三四米远的地方停下，摆了摆手，声音听起来很醇厚："小伙子，别紧张。我不是坏人，就是出来遛弯儿的。你……你吹得真好，我听入迷了，没忍住。"</p>
+            
+            <p>简心的脸"刷"地一下就红了，从脖子根一直红到耳朵尖。他抓着笛子，窘得手都不知道该往哪儿放，低着头含糊不清地嘟囔："我……我瞎吹的。"</p>
+            
+            <p>"这可不是瞎吹，"男人笑着摇了摇头，他的目光落在简心手里的竹笛上，"我看你这指法和气息，是练过的。这首《传奇》，好多人都把它吹得花里胡哨的，就你，吹出了里头那股子味道。挺难得。"</p>
+        </div>
+
+        <!-- 第三章 -->
+        <div class="chapter" id="chapter3">
+            <h2>第三章 开学典礼</h2>
+            
+            <div class="section-title">第三节</div>
+            
+            <p>第二天，天气晴好。</p>
+            
+            <p>人工智能学院的研究生开学典礼，在学院大礼堂举行。简心和室友们一起，找了个中间靠后的位置坐下。礼堂里坐满了人，空气中弥漫着一股新书本和年轻人混合在一起的、充满朝气的味道。</p>
+            
+            <p>院领导们在主席台依次就座。简心低着头，百无聊赖地翻着手里的会议手册。他对这种场合一向没什么兴趣。</p>
+            
+            <p>"……下面，有请我们学院的常务副院长，长江学者，曾致知教授，为我们致辞！"</p>
+            
+            <p>听到"曾致知"这个名字，简心并没有太在意。他继续低头研究着手册上各个导师的简介，那密密麻麻的头衔和研究成果，看得他有些眼花。</p>
+            
+            <p>一个醇厚而熟悉的声音，通过话筒和音响，传遍了整个礼堂。</p>
+            
+            <p>"各位新同学，大家上午好。"</p>
+            
+            <p>简心的手指猛地一顿。</p>
+            
+            <p>这个声音……</p>
+            
+            <p>他像是被什么东西击中了一样，豁然抬头，望向主席台。</p>
+            
+            <p>只见一个穿着合体深蓝色西装的男人，正站在讲台后面。他身形挺拔，肩膀很宽，西装被他撑得很有型，完全看不出昨晚在休闲服下那微微发福的样子。他没有戴昨晚那副亲和的金丝边眼镜，露出一双深邃而明亮的眼睛。鼻梁很高，嘴唇的线条很清晰。头发梳理得一丝不苟，鬓角处有几根藏不住的银丝，非但不显老态，反而给他增添了一种经过岁月沉淀的、儒雅又可靠的气质。</p>
+            
+            <p>他站在那里，一手随意地搭在讲台上，一手拿着麦克风，脸上带着从容的、淡淡的微笑，目光扫过台下黑压压的人群。</p>
+            
+            <p>是他。</p>
+            
+            <p>简心的大脑"嗡"的一声，几乎停止了思考。</p>
+            
+            <p>昨晚那个在湖边跟他聊竹笛和古琴的、和蔼可亲的胖大叔，竟然就是……就是院里的副院长？那个在学术圈里如雷贯耳、传说中极有个人魅力的曾致知？</p>
+            
+            <p>他简直不敢相信自己的眼睛。</p>
+            
+            <p>"……你们中的很多人，选择AI，或许是因为它热门，或许是因为它高薪。但在我看来，AI最大的魅力，在于它给了我们一种全新的可能性，一种用逻辑和理性，去理解、甚至重塑这个复杂世界……"</p>
+            
+            <p>曾致知开始了他的演讲。他没有讲稿，声音不疾不徐，充满了磁性。他没有说那些假大空的套话，而是从自己年轻时的一个失败的研究项目讲起，用风趣的语言，讲述了科研道路上的迷茫与坚持。他的话语里，有对学术的敬畏，也有对年轻人的期许和理解。</p>
+            
+            <p>整个礼堂都安静了下来，所有人都被他演讲的魅力所吸引。</p>
+            
+            <p>简心也怔怔地看着他。聚光灯下的曾致知，和昨晚那个在月光下闲聊的男人，仿佛是两个人，又仿佛是同一个人。褪去了夜晚的随和，他身上多了一种属于学者的、让人信服的权威感和睿智的光芒。</p>
+            
+            <p>就在这时，曾致知的目光，仿佛不经意地，扫过了简心所在的这个区域。</p>
+            
+            <p>在与简心视线相遇的那一瞬间，他的目光似乎极轻微地停顿了一下，嘴角那抹公式化的、对着所有学生的微笑，好像也起了一丝微妙的变化，变得更具体、更真实了一些。那眼神，像是在说："哦，原来你在这里。"</p>
+            
+            <p>只是一瞬，他的目光便又移开了，继续均匀地洒向台下的每一张脸。</p>
+            
+            <p>但简心却清清楚楚地捕捉到了那一瞬。</p>
+            
+            <p>他的心跳，没来由地，又开始加速。他下意识地低下头，避开了主席台上的目光，脸颊却不受控制地开始发烫。</p>
+            
+            <p>旁边的陆子昂用胳膊肘捅了捅他，压低声音兴奋地说："卧槽，曾老板也太帅了吧！讲话水平真高！要是能做他的学生，我做梦都能笑醒！"</p>
+            
+            <p>简心没有作声。他用手指无意识地摩挲着会议手册的纸张边缘。</p>
+            
+            <p>手册上，"曾致知"三个字的旁边，印着一张标准的一寸免冠照。照片上的他，表情严肃，不苟言笑。</p>
+            
+            <p>简心看着那张照片，脑海里浮现出的，却是昨晚在湖边，那个男人眯着眼睛，笑呵呵地跟他说"乐器这东西，跟人一样，处久了，就有了灵气"的模样。</p>
+            
+            <p>他忽然觉得，选导师这件原本让他感到无比焦虑和渺茫的事情，似乎……有了一丝意想不到的、具体而微弱的光。</p>
+        </div>
+
+        <!-- 更多章节... -->
+        <div class="chapter" id="chapter4">
+            <h2>第四章 图书馆邂逅</h2>
+            <p>（章节内容待续...）</p>
+        </div>
+
+        <div class="chapter" id="chapter5">
+            <h2>第五章 加入课题组</h2>
+            <p>（章节内容待续...）</p>
+        </div>
+
+        <div class="chapter" id="chapter6">
+            <h2>第六章 迎新晚会</h2>
+            <p>（章节内容待续...）</p>
+        </div>
+    </div>
+
+    <!-- 底部导航 -->
+    <div class="bottom-nav">
+        <button class="nav-btn" onclick="previousChapter()" id="prevBtn">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="chapter-info" id="chapterInfo">1 / 20</div>
+        <button class="nav-btn" onclick="nextChapter()" id="nextBtn">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+
+    <!-- 设置面板 -->
+    <div class="settings-panel" id="settingsPanel">
+        <h3 class="settings-title">阅读设置</h3>
+        
+        <div class="setting-group">
+            <label class="setting-label">字体大小</label>
+            <input type="range" class="setting-slider" min="14" max="24" value="18" id="fontSizeSlider">
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">行间距</label>
+            <input type="range" class="setting-slider" min="1.4" max="2.2" step="0.1" value="1.8" id="lineHeightSlider">
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">夜间模式</label>
+            <button class="toolbar-btn" onclick="toggleDarkMode()" style="margin-top: 0.5rem;">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- 设置面板遮罩 -->
+    <div class="sidebar-overlay" id="settingsOverlay" onclick="toggleSettings()"></div>
+
+    <script>
+        let currentChapter = 1;
+        const totalChapters = 20;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateProgress();
+            loadSettings();
+            
+            // 检查URL hash
+            const hash = window.location.hash;
+            if (hash && hash.startsWith('#chapter')) {
+                const chapterNum = parseInt(hash.replace('#chapter', ''));
+                if (chapterNum >= 1 && chapterNum <= totalChapters) {
+                    goToChapter(chapterNum);
+                }
+            }
+        });
+
+        // 跳转到指定章节
+        function goToChapter(chapterNum) {
+            if (chapterNum < 1 || chapterNum > totalChapters) return;
+            
+            // 隐藏当前章节
+            document.querySelectorAll('.chapter').forEach(chapter => {
+                chapter.classList.remove('active');
+            });
+            
+            // 显示目标章节
+            const targetChapter = document.getElementById(`chapter${chapterNum}`);
+            if (targetChapter) {
+                targetChapter.classList.add('active');
+                currentChapter = chapterNum;
+                
+                // 更新UI
+                updateProgress();
+                updateSidebar();
+                updateToolbarTitle();
+                
+                // 滚动到顶部
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // 更新URL
+                window.history.replaceState(null, null, `#chapter${chapterNum}`);
+            }
+        }
+
+        // 上一章
+        function previousChapter() {
+            if (currentChapter > 1) {
+                goToChapter(currentChapter - 1);
+            }
+        }
+
+        // 下一章
+        function nextChapter() {
+            if (currentChapter < totalChapters) {
+                goToChapter(currentChapter + 1);
+            }
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const progress = (currentChapter / totalChapters) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+            document.getElementById('chapterInfo').textContent = `${currentChapter} / ${totalChapters}`;
+            
+            // 更新按钮状态
+            document.getElementById('prevBtn').disabled = currentChapter === 1;
+            document.getElementById('nextBtn').disabled = currentChapter === totalChapters;
+        }
+
+        // 更新侧边栏
+        function updateSidebar() {
+            document.querySelectorAll('.chapter-item').forEach((item, index) => {
+                item.classList.toggle('active', index + 1 === currentChapter);
+            });
+        }
+
+        // 更新工具栏标题
+        function updateToolbarTitle() {
+            const chapterNames = [
+                '', '初入校园', '湖边偶遇', '开学典礼', '图书馆邂逅', '加入课题组',
+                '迎新晚会', '日常相处', '学术突破', '上海之行', '情感萌芽',
+                '深夜长谈', '外滩漫步', '心灵相通', '回归日常', '情感困惑',
+                '深夜笛声', '心意相通', '雪中漫步', '元旦之夜', '风雨同舟'
+            ];
+            document.querySelector('.chapter-title').textContent = 
+                `第${currentChapter}章 ${chapterNames[currentChapter]}`;
+        }
+
+        // 切换侧边栏
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const mainContent = document.getElementById('mainContent');
+            
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            mainContent.classList.toggle('sidebar-open');
+        }
+
+        // 切换设置面板
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            const overlay = document.getElementById('settingsOverlay');
+            
+            panel.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        // 字体大小设置
+        document.getElementById('fontSizeSlider').addEventListener('input', function() {
+            const fontSize = this.value + 'px';
+            document.querySelectorAll('.chapter p').forEach(p => {
+                p.style.fontSize = fontSize;
+            });
+            saveSettings();
+        });
+
+        // 行间距设置
+        document.getElementById('lineHeightSlider').addEventListener('input', function() {
+            const lineHeight = this.value;
+            document.querySelectorAll('.chapter p').forEach(p => {
+                p.style.lineHeight = lineHeight;
+            });
+            saveSettings();
+        });
+
+        // 切换深色模式
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            saveSettings();
+        }
+
+        // 保存设置
+        function saveSettings() {
+            const settings = {
+                fontSize: document.getElementById('fontSizeSlider').value,
+                lineHeight: document.getElementById('lineHeightSlider').value,
+                darkMode: document.body.classList.contains('dark-mode')
+            };
+            localStorage.setItem('readingSettings', JSON.stringify(settings));
+        }
+
+        // 加载设置
+        function loadSettings() {
+            const saved = localStorage.getItem('readingSettings');
+            if (saved) {
+                const settings = JSON.parse(saved);
+                
+                document.getElementById('fontSizeSlider').value = settings.fontSize || 18;
+                document.getElementById('lineHeightSlider').value = settings.lineHeight || 1.8;
+                
+                if (settings.darkMode) {
+                    document.body.classList.add('dark-mode');
+                }
+                
+                // 应用设置
+                document.getElementById('fontSizeSlider').dispatchEvent(new Event('input'));
+                document.getElementById('lineHeightSlider').dispatchEvent(new Event('input'));
+            }
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' && !e.ctrlKey && !e.metaKey) {
+                previousChapter();
+            } else if (e.key === 'ArrowRight' && !e.ctrlKey && !e.metaKey) {
+                nextChapter();
+            } else if (e.key === 'Escape') {
+                const sidebar = document.getElementById('sidebar');
+                const settingsPanel = document.getElementById('settingsPanel');
+                
+                if (sidebar.classList.contains('open')) {
+                    toggleSidebar();
+                } else if (settingsPanel.classList.contains('open')) {
+                    toggleSettings();
+                }
+            }
+        });
+
+        // 点击主内容区域关闭侧边栏
+        document.getElementById('mainContent').addEventListener('click', function(e) {
+            const sidebar = document.getElementById('sidebar');
+            const settingsPanel = document.getElementById('settingsPanel');
+            
+            if (sidebar.classList.contains('open')) {
+                toggleSidebar();
+            } else if (settingsPanel.classList.contains('open')) {
+                toggleSettings();
+            }
+        });
+
+        // 防止冒泡
+        document.getElementById('sidebar').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        document.getElementById('settingsPanel').addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    </script>
+</body>
+</html>

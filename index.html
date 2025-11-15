@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简心 - 一个关于成长与爱的故事</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(135deg, #f8f6f0 0%, #e8e2d5 100%);
+            color: #4a4a4a;
+            line-height: 1.8;
+            overflow-x: hidden;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(248, 246, 240, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            z-index: 1000;
+            border-bottom: 1px solid rgba(139, 115, 85, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #8b7355;
+            text-decoration: none;
+            font-family: 'Noto Serif SC', serif;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #6b5b73;
+            font-weight: 400;
+            transition: color 0.3s ease;
+            font-family: 'Noto Sans SC', sans-serif;
+        }
+
+        .nav-links a:hover {
+            color: #8b7355;
+        }
+
+        /* 主要内容区域 */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23f8f6f0;stop-opacity:1" /><stop offset="50%" style="stop-color:%23e8e2d5;stop-opacity:1" /><stop offset="100%" style="stop-color:%23d4c4a8;stop-opacity:1" /></linearGradient></defs><rect width="1200" height="800" fill="url(%23bg)"/><circle cx="200" cy="150" r="2" fill="%23c9a876" opacity="0.6"/><circle cx="800" cy="300" r="1.5" fill="%23c9a876" opacity="0.4"/><circle cx="1000" cy="200" r="1" fill="%23c9a876" opacity="0.5"/><circle cx="300" cy="600" r="2.5" fill="%23c9a876" opacity="0.3"/><circle cx="900" cy="650" r="1.8" fill="%23c9a876" opacity="0.4"/></svg>') center/cover;
+        }
+
+        .hero-content {
+            text-align: center;
+            max-width: 800px;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 300;
+            color: #8b7355;
+            margin-bottom: 1rem;
+            letter-spacing: 0.5rem;
+            font-family: 'Noto Serif SC', serif;
+            opacity: 0;
+            animation: fadeInUp 1.5s ease 0.5s forwards;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: #6b5b73;
+            margin-bottom: 3rem;
+            font-weight: 300;
+            letter-spacing: 0.2rem;
+            opacity: 0;
+            animation: fadeInUp 1.5s ease 1s forwards;
+        }
+
+        .hero-description {
+            font-size: 1.1rem;
+            color: #5a5a5a;
+            line-height: 1.8;
+            margin-bottom: 3rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            opacity: 0;
+            animation: fadeInUp 1.5s ease 1.5s forwards;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #8b7355 0%, #a68b5b 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 500;
+            font-family: 'Noto Sans SC', sans-serif;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(139, 115, 85, 0.3);
+            opacity: 0;
+            animation: fadeInUp 1.5s ease 2s forwards;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(139, 115, 85, 0.4);
+        }
+
+        /* 故事简介部分 */
+        .story-section {
+            padding: 6rem 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            color: #8b7355;
+            text-align: center;
+            margin-bottom: 4rem;
+            font-weight: 400;
+            letter-spacing: 0.3rem;
+        }
+
+        .story-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .story-card {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(139, 115, 85, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .story-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .story-card-icon {
+            font-size: 2.5rem;
+            color: #8b7355;
+            margin-bottom: 1.5rem;
+        }
+
+        .story-card-title {
+            font-size: 1.4rem;
+            color: #6b5b73;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .story-card-text {
+            color: #5a5a5a;
+            line-height: 1.7;
+        }
+
+        /* 章节预览 */
+        .chapters-section {
+            background: rgba(255, 255, 255, 0.5);
+            padding: 6rem 2rem;
+            margin: 4rem 0;
+        }
+
+        .chapters-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .chapters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .chapter-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid #8b7355;
+        }
+
+        .chapter-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+        }
+
+        .chapter-number {
+            font-size: 0.9rem;
+            color: #8b7355;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .chapter-title {
+            font-size: 1.2rem;
+            color: #6b5b73;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .chapter-preview {
+            font-size: 0.95rem;
+            color: #5a5a5a;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 页脚 */
+        .footer {
+            background: rgba(107, 91, 115, 0.1);
+            padding: 3rem 2rem 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(139, 115, 85, 0.1);
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-text {
+            color: #6b5b73;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-quote {
+            font-style: italic;
+            color: #8b7355;
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* 动画 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .story-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        /* 图片画廊 */
+        .gallery-section {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 6rem 2rem;
+            margin: 4rem 0;
+        }
+
+        .gallery-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .gallery-item {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-image {
+            transform: scale(1.05);
+        }
+
+        .gallery-caption {
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .gallery-caption h4 {
+            color: #8b7355;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .gallery-caption p {
+            color: #6b5b73;
+            font-size: 0.95rem;
+        }
+
+        /* 滚动动画 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">简心</a>
+            <ul class="nav-links">
+                <li><a href="#story">故事简介</a></li>
+                <li><a href="#chapters">章节预览</a></li>
+                <li><a href="reading.html">开始阅读</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">简心</h1>
+            <p class="hero-subtitle">一个关于成长与爱的故事</p>
+            <div class="hero-description">
+                在人工智能的时代浪潮中，一个孤独的天才少年遇到了改变他一生的导师。
+                这是一个关于学术追求、师生情谊，以及在孤独中寻找温暖的故事。
+                当科技与人心相遇，当理性与情感交织，他们能否在彼此的陪伴中找到真正的归属？
+            </div>
+            <a href="reading.html" class="cta-button">开始阅读</a>
+        </div>
+    </section>
+
+    <!-- 故事简介 -->
+    <section id="story" class="story-section">
+        <h2 class="section-title fade-in">故事简介</h2>
+        <div class="story-grid">
+            <div class="story-card fade-in">
+                <div class="story-card-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3 class="story-card-title">学术之路</h3>
+                <p class="story-card-text">
+                    简心，一个来自南方的天才少年，凭借优异的成绩保送到国科大人工智能学院。
+                    他有着超乎常人的学术天赋，却在人际交往中显得格外孤独。
+                    直到他遇到了曾致知教授——一个在学术界享有盛誉的学者。
+                </p>
+            </div>
+            
+            <div class="story-card fade-in">
+                <div class="story-card-icon">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <h3 class="story-card-title">师生情深</h3>
+                <p class="story-card-text">
+                    从图书馆的偶然相遇到实验室的深度合作，从学术讨论到生活关怀，
+                    曾教授不仅是简心的导师，更像是一位慈父，填补了他内心深处对家庭的渴望。
+                    这份纯粹的师生情谊，在学术的道路上开出了温暖的花朵。
+                </p>
+            </div>
+            
+            <div class="story-card fade-in">
+                <div class="story-card-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="story-card-title">AI伦理</h3>
+                <p class="story-card-text">
+                    在人工智能伦理研究的前沿领域，简心提出了创新的"声誉系统"理论，
+                    为解决多智能体协同中的伦理困境提供了新的思路。
+                    这不仅是学术上的突破，更是他对人性与科技关系的深刻思考。
+                </p>
+            </div>
+            
+            <div class="story-card fade-in">
+                <div class="story-card-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <h3 class="story-card-title">音乐之缘</h3>
+                <p class="story-card-text">
+                    一支竹笛成为了连接两个孤独灵魂的桥梁。
+                    在迎新晚会上，简心的笛声与曾教授的歌声完美融合，
+                    那一刻，他们找到了彼此心灵深处最真挚的共鸣。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 章节预览 -->
+    <section id="chapters" class="chapters-section">
+        <div class="chapters-container">
+            <h2 class="section-title fade-in">章节预览</h2>
+            <div class="chapters-grid">
+                <div class="chapter-card fade-in" onclick="window.location.href='reading.html#chapter1'">
+                    <div class="chapter-number">第一章</div>
+                    <h3 class="chapter-title">初入校园</h3>
+                    <p class="chapter-preview">
+                        八月底的北京，像一口烧干了水的铁锅，只剩下灼人的余温。简心拖着行李箱，背着那个看起来用了有些年头的双肩包，在人行道上艰难地穿行...
+                    </p>
+                </div>
+                
+                <div class="chapter-card fade-in" onclick="window.location.href='reading.html#chapter2'">
+                    <div class="chapter-number">第二章</div>
+                    <h3 class="chapter-title">湖边偶遇</h3>
+                    <p class="chapter-preview">
+                        夜晚的校园，风比白天凉快得多，带着一股潮乎乎的水汽味儿。简心也不知道要去哪儿，就顺着石子路，漫无目的地朝湖边走...
+                    </p>
+                </div>
+                
+                <div class="chapter-card fade-in" onclick="window.location.href='reading.html#chapter3'">
+                    <div class="chapter-number">第三章</div>
+                    <h3 class="chapter-title">开学典礼</h3>
+                    <p class="chapter-preview">
+                        人工智能学院的研究生开学典礼，在学院大礼堂举行。简心和室友们一起，找了个中间靠后的位置坐下...
+                    </p>
+                </div>
+                
+                <div class="chapter-card fade-in" onclick="window.location.href='reading.html#chapter4'">
+                    <div class="chapter-number">第四章</div>
+                    <h3 class="chapter-title">图书馆邂逅</h3>
+                    <p class="chapter-preview">
+                        每周的周一和周四下午，图书馆四楼那个少有人至的古籍区，就成了简心的"秘密基地"...
+                    </p>
+                </div>
+                
+                <div class="chapter-card fade-in" onclick="window.location.href='reading.html#chapter5'">
+                    <div class="chapter-number">第五章</div>
+                    <h3 class="chapter-title">加入课题组</h3>
+                    <p class="chapter-preview">
+                        "欢迎你，加入我的项目组。"曾致知醇厚的声音，在安静得能听见尘埃落地的办公室里响起...
+                    </p>
+                </div>
+                
+                <div class="chapter-card fade-in" onclick="window.location.href='reading.html#chapter6'">
+                    <div class="chapter-number">第六章</div>
+                    <h3 class="chapter-title">迎新晚会</h3>
+                    <p class="chapter-preview">
+                        迎新晚会那天，后台乱成一锅粥。简心穿着一件节目组统一发的、有些不合身的白色衬衫，紧张地坐在角落里...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 图片展示区域 -->
+    <section class="gallery-section">
+        <div class="gallery-container">
+            <h2 class="section-title fade-in">故事场景</h2>
+            <div class="gallery-grid">
+                <div class="gallery-item fade-in">
+                    <img src="hero-lake.png" alt="雁栖湖畔" class="gallery-image">
+                    <div class="gallery-caption">
+                        <h4>雁栖湖畔</h4>
+                        <p>简心第一次吹奏竹笛的地方</p>
+                    </div>
+                </div>
+                <div class="gallery-item fade-in">
+                    <img src="bamboo-flute.png" alt="竹笛" class="gallery-image">
+                    <div class="gallery-caption">
+                        <h4>紫竹笛</h4>
+                        <p>连接两个灵魂的乐器</p>
+                    </div>
+                </div>
+                <div class="gallery-item fade-in">
+                    <img src="library.png" alt="图书馆" class="gallery-image">
+                    <div class="gallery-caption">
+                        <h4>古籍区</h4>
+                        <p>知识与思想的交汇之地</p>
+                    </div>
+                </div>
+                <div class="gallery-item fade-in">
+                    <img src="snow-campus.png" alt="雪中校园" class="gallery-image">
+                    <div class="gallery-caption">
+                        <h4>雪中漫步</h4>
+                        <p>冬日里的温暖时光</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p class="footer-text">这是一个关于成长、学术与情感的故事</p>
+            <p class="footer-quote">"有些人来到这个世界上，就是从零开始的。没有来路，也没有归途。"</p>
+            <p class="footer-text">© 2024 简心 | 一个温暖人心的故事</p>
+        </div>
+    </footer>
+
+    <script>
+        // 滚动动画
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.style.background = 'rgba(248, 246, 240, 0.98)';
+            } else {
+                navbar.style.background = 'rgba(248, 246, 240, 0.95)';
+            }
+        });
+
+        // 图片点击放大效果
+        document.querySelectorAll('.gallery-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const img = this.querySelector('.gallery-image');
+                const caption = this.querySelector('.gallery-caption h4').textContent;
+                
+                const modal = document.createElement('div');
+                modal.innerHTML = `
+                    <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                                background: rgba(0, 0, 0, 0.9); z-index: 10000;
+                                display: flex; justify-content: center; align-items: center;
+                                cursor: pointer;" onclick="this.remove()">
+                        <div style="text-align: center; max-width: 90%; max-height: 90%;">
+                            <img src="${img.src}" alt="${caption}" 
+                                 style="max-width: 100%; max-height: 80vh; object-fit: contain;
+                                        border-radius: 10px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+                            <h3 style="color: white; margin-top: 1rem; font-family: 'Noto Serif SC', serif;">
+                                ${caption}
+                            </h3>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            });
+        });
+
+        // 添加打字机效果
+        function typeWriter(element, text, speed = 50) {
+            let i = 0;
+            element.innerHTML = '';
+            
+            function type() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        // 为标题添加打字机效果
+        setTimeout(() => {
+            const heroTitle = document.querySelector('.hero-title');
+            if (heroTitle) {
+                const originalText = heroTitle.textContent;
+                typeWriter(heroTitle, originalText, 100);
+            }
+        }, 500);
+    </script>
+</body>
+</html>
